@@ -1,0 +1,32 @@
+# --- Backend (Gradle / Java) ---
+backend/build/
+backend/.gradle/
+backend/bin/
+backend/out/
+!backend/gradle/wrapper/gradle-wrapper.jar
+
+# --- Frontend (Node / Vite) ---
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+
+# --- 환경변수 / 시크릿 ---
+.env
+.env.local
+*.env
+!*.env.example
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+
+# --- 로그 ---
+*.log
+npm-debug.log*

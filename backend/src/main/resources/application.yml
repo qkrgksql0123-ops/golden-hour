@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: golden-hour
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/golden_hour}
+    username: ${DB_USERNAME:golden_hour}
+    password: ${DB_PASSWORD:golden_hour}
+
+  jpa:
+    hibernate:
+      # 초기 개발 단계라 update로 시작한다 해. 팀 컨벤션 정해지면 Flyway/Liquibase로 옮기는 걸 권장한다 해.
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# 외부 API 키는 코드/레포에 절대 커밋하지 않는다 해 — 전부 환경변수로 주입한다 해.
+external:
+  ncmc:
+    service-key: ${NCMC_SERVICE_KEY:}
+  kasi:
+    service-key: ${KASI_SERVICE_KEY:}
+  kakao-mobility:
+    api-key: ${KAKAO_MOBILITY_API_KEY:}
+  kakao:
+    rest-api-key: ${KAKAO_REST_API_KEY:}

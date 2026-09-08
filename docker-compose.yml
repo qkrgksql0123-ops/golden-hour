@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: golden-hour-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: golden_hour
+      POSTGRES_USER: golden_hour
+      POSTGRES_PASSWORD: golden_hour
+    ports:
+      - "5432:5432"
+    volumes:
+      - golden_hour_pgdata:/var/lib/postgresql/data
+
+volumes:
+  golden_hour_pgdata:
