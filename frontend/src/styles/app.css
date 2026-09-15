@@ -349,7 +349,7 @@ a { color: inherit; text-decoration: none; }
 .landing__actions {
   display: grid; gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  max-width: 660px;
+  max-width: 420px;
 }
 .cta {
   display: block; width: 100%; text-align: left; cursor: pointer;

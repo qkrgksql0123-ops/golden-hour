@@ -34,10 +34,6 @@ export default function LandingPage() {
               <span className="cta__t">지금 갈 수 있는 응급실</span>
               <span className="cta__d">실시간 병상 + 도착 시간순으로 안내</span>
             </button>
-            <button type="button" className="cta cta--alt" disabled>
-              <span className="cta__t">야간 진료 병원 · 약국</span>
-              <span className="cta__d">준비 중입니다</span>
-            </button>
           </div>
         </div>
 
