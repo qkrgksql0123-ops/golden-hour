@@ -1,25 +1,32 @@
 import { KakaoMap } from "./KakaoMap";
 import { SchematicMap } from "./SchematicMap";
-import type { HospitalView } from "../types/view";
+import type { MapPoint } from "../types/view";
 import type { Coords } from "../hooks/useGeolocation";
 import type { SdkStatus } from "../hooks/useKakaoLoader";
 
+export interface LegendItem {
+  /** lg--ok / lg--tight / lg--full / lg--accent */
+  cls: string;
+  label: string;
+}
+
 interface Props {
   center: Coords;
-  items: HospitalView[];
+  points: MapPoint[];
   selectedId: number | null;
   sdk: SdkStatus;
+  legend: LegendItem[];
   onSelect: (id: number) => void;
 }
 
 /** SDK가 준비되면 실제 카카오 지도를, 아니면 개략도를 보여준다 해. */
-export function MapView({ center, items, selectedId, sdk, onSelect }: Props) {
+export function MapView({ center, points, selectedId, sdk, legend, onSelect }: Props) {
   return (
     <div className="maparea">
       {sdk === "ready" ? (
-        <KakaoMap center={center} items={items} selectedId={selectedId} onSelect={onSelect} />
+        <KakaoMap center={center} points={points} selectedId={selectedId} onSelect={onSelect} />
       ) : (
-        <SchematicMap items={items} selectedId={selectedId} onSelect={onSelect} />
+        <SchematicMap points={points} selectedId={selectedId} onSelect={onSelect} />
       )}
 
       {sdk !== "ready" && (
@@ -34,9 +41,9 @@ export function MapView({ center, items, selectedId, sdk, onSelect }: Props) {
 
       <div className="maplegend">
         <span><i className="lg lg--accent" />내 위치</span>
-        <span><i className="lg lg--ok" />병상 여유</span>
-        <span><i className="lg lg--tight" />병상 부족</span>
-        <span><i className="lg lg--full" />수용 불가</span>
+        {legend.map((it) => (
+          <span key={it.label}><i className={`lg ${it.cls}`} />{it.label}</span>
+        ))}
       </div>
     </div>
   );

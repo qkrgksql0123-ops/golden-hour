@@ -13,7 +13,7 @@ import { useRecommendation } from "../hooks/useRecommendation";
 import { useGeolocation, type Coords } from "../hooks/useGeolocation";
 import { useKakaoLoader } from "../hooks/useKakaoLoader";
 import { useAddress } from "../hooks/useAddress";
-import type { SortMode } from "../types/view";
+import { bedStateOf, type MapPoint, type SortMode } from "../types/view";
 import { minutesSince, timeLabel } from "../lib/format";
 
 // 기능 ①③ 화면. docs/API.md 의 /api/v1/hospitals/recommend 응답을 그대로 쓴다 해.
@@ -36,6 +36,19 @@ export default function HomePage() {
   const items = useMemo(
     () => (effectiveSort === "time" ? byTime : byDistance),
     [effectiveSort, byTime, byDistance],
+  );
+
+  const points: MapPoint[] = useMemo(
+    () =>
+      items.map((h) => ({
+        id: h.id,
+        name: h.name,
+        lat: h.lat,
+        lng: h.lng,
+        tone: bedStateOf(h.beds.general),
+        label: h.etaMin === null ? `${h.distanceKm.toFixed(1)}km` : `${h.etaMin}분`,
+      })),
+    [items],
   );
 
   const selected = items.find((h) => h.id === selectedId) ?? null;
@@ -124,9 +137,14 @@ export default function HomePage() {
         <div className="mapwrap">
           <MapView
             center={geo.coords}
-            items={items}
+            points={points}
             selectedId={selectedId}
             sdk={sdk}
+            legend={[
+              { cls: "lg--ok", label: "병상 여유" },
+              { cls: "lg--tight", label: "병상 부족" },
+              { cls: "lg--full", label: "수용 불가" },
+            ]}
             onSelect={toggleSelect}
           />
           {selected && <DetailPanel hospital={selected} onClose={() => setSelectedId(null)} />}

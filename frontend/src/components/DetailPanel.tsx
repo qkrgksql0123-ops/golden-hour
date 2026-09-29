@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { BedBadge } from "./BedBadge";
 import type { HospitalView } from "../types/view";
 import { kmLabel, timeLabel } from "../lib/format";
@@ -8,8 +9,6 @@ interface Props {
 }
 
 export function DetailPanel({ hospital: h, onClose }: Props) {
-  const mapLink = `https://map.kakao.com/link/to/${encodeURIComponent(h.name)},${h.lat},${h.lng}`;
-
   return (
     <aside className="detail" aria-label={`${h.name} 상세 정보`}>
       <button type="button" className="detail__close" onClick={onClose} aria-label="닫기">
@@ -54,7 +53,7 @@ export function DetailPanel({ hospital: h, onClose }: Props) {
 
       <div className="detail__actions">
         <a className="btn btn--ghost" href={`tel:${h.phone}`}>전화 걸기</a>
-        <a className="btn" href={mapLink} target="_blank" rel="noreferrer">길 안내</a>
+        <Link className="btn" to={`/route/${h.id}`}>길 안내</Link>
       </div>
     </aside>
   );

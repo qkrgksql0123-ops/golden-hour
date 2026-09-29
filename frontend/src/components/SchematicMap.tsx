@@ -1,7 +1,7 @@
-import { bedStateOf, type HospitalView } from "../types/view";
+import type { MapPoint } from "../types/view";
 
 interface Props {
-  items: HospitalView[];
+  points: MapPoint[];
   selectedId: number | null;
   onSelect: (id: number) => void;
 }
@@ -15,18 +15,18 @@ const SLOTS = [
   { x: 330, y: 150 },
   { x: 520, y: 120 },
   { x: 150, y: 260 },
+  { x: 660, y: 250 },
+  { x: 380, y: 560 },
 ];
 
 /**
  * 지도 키가 없을 때 쓰는 개략도다 해.
  * 카카오 키를 아직 못 받은 팀원도 앱 전체를 실행할 수 있어야 해서 남겨 둔다 해.
  */
-export function SchematicMap({ items, selectedId, onSelect }: Props) {
-  const placed = [...items].sort((a, b) => a.id - b.id);
-
+export function SchematicMap({ points, selectedId, onSelect }: Props) {
   return (
     <svg className="mapbase" viewBox="0 0 820 620" role="img"
-         aria-label="현재 위치와 주변 응급의료기관의 위치를 나타낸 개략도">
+         aria-label="현재 위치와 주변 기관의 위치를 나타낸 개략도">
       <rect x="0" y="0" width="820" height="620" fill="var(--map)" />
 
       <g stroke="var(--mapline)" strokeWidth="14" strokeLinecap="round">
@@ -43,7 +43,7 @@ export function SchematicMap({ items, selectedId, onSelect }: Props) {
         <line x1="540" y1="330" x2="540" y2="640" />
       </g>
 
-      {/* 하천 — 다리가 두 곳뿐이라 가까운 병원이 더 오래 걸린다 해 */}
+      {/* 하천 — 다리가 두 곳뿐이라 가까운 곳이 더 오래 걸린다 해 */}
       <path d="M -20 262 C 180 222, 360 268, 560 232 S 780 186, 840 196"
             fill="none" stroke="var(--water)" strokeWidth="46" strokeLinecap="round" />
       <g stroke="var(--mapline)" strokeWidth="14" strokeLinecap="round">
@@ -55,23 +55,21 @@ export function SchematicMap({ items, selectedId, onSelect }: Props) {
       <circle cx={ME.x} cy={ME.y} r="6.5" fill="var(--accent)" stroke="var(--panel)" strokeWidth="2.5" />
       <text x={ME.x} y={ME.y + 30} className="map-me" textAnchor="middle">내 위치</text>
 
-      {placed.map((h, i) => {
+      {[...points].sort((a, b) => a.id - b.id).map((pt, i) => {
         const slot = SLOTS[i % SLOTS.length];
-        const on = selectedId === h.id;
-        const state = bedStateOf(h.beds.general);
-        const label = h.etaMin === null ? `${h.distanceKm.toFixed(1)}km` : `${h.etaMin}분`;
-        const w = label.length * 7.6 + 18;
+        const on = selectedId === pt.id;
+        const w = pt.label.length * 7.6 + 18;
         return (
-          <g key={h.id} className="pin" onClick={() => onSelect(h.id)} role="button"
-             tabIndex={0} aria-label={`${h.name} ${label}`}>
+          <g key={pt.id} className="pin" onClick={() => onSelect(pt.id)} role="button"
+             tabIndex={0} aria-label={`${pt.name} ${pt.label}`}>
             <rect x={slot.x - w / 2} y={slot.y - 42} width={w} height="23" rx="4"
                   fill={on ? "var(--accent)" : "var(--panel)"}
                   stroke={on ? "var(--accent)" : "var(--line)"} strokeWidth="1" />
             <text x={slot.x} y={slot.y - 26} textAnchor="middle"
-                  className={on ? "pin__label pin__label--on" : "pin__label"}>{label}</text>
-            <circle cx={slot.x} cy={slot.y} r={on ? 11 : 8} className={`pin__dot pin__dot--${state}`}
+                  className={on ? "pin__label pin__label--on" : "pin__label"}>{pt.label}</text>
+            <circle cx={slot.x} cy={slot.y} r={on ? 11 : 8} className={`pin__dot pin__dot--${pt.tone}`}
                     stroke="var(--panel)" strokeWidth="2.5" />
-            <text x={slot.x} y={slot.y + 27} textAnchor="middle" className="pin__name">{h.name}</text>
+            <text x={slot.x} y={slot.y + 27} textAnchor="middle" className="pin__name">{pt.name}</text>
           </g>
         );
       })}
