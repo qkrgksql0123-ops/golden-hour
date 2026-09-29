@@ -2,6 +2,8 @@
 // 백엔드 응답 타입(hospital.ts)은 그대로 두고, 화면에서 쓰기 편한 형태로 한 번 변환한다 해.
 // 서버 필드가 바뀌어도 lib/ranking.ts 만 고치면 컴포넌트는 그대로다 해.
 
+import type { BedHistoryPoint } from "./hospital";
+
 export type SortMode = "time" | "distance";
 
 export interface HospitalView {
@@ -26,6 +28,8 @@ export interface HospitalView {
     icu: number;
   };
   bedsUpdatedAt: string;
+  /** 도착 시점 병상예측용 이력. 없으면 예측 불가 */
+  bedHistory?: BedHistoryPoint[];
 }
 
 export type BedState = "ok" | "tight" | "full";

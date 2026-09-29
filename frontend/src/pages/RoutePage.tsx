@@ -3,11 +3,16 @@ import { Link, useParams } from "react-router-dom";
 import { Logo } from "../components/Logo";
 import { EmergencyNotice } from "../components/EmergencyNotice";
 import { RouteMap } from "../components/RouteMap";
+import { BedBadge } from "../components/BedBadge";
 import { getEta, getHospitalDetail } from "../api/hospitals";
 import { mockRecommend } from "../mocks/recommend";
 import { useGeolocation } from "../hooks/useGeolocation";
 import type { Hospital } from "../types/hospital";
+import { bedStateOf } from "../types/view";
 import { etaMinutes } from "../lib/ranking";
+import { predictBedsAtArrival } from "../lib/predict";
+
+const CONFIDENCE_LABEL = { high: "높음", medium: "중간", low: "낮음", unknown: "-" } as const;
 
 /**
  * 기능 ⑤ 경로 안내 화면.
@@ -101,6 +106,47 @@ export default function RoutePage() {
               )}
               <span className="route__stat-note">현재 교통 기준 · 자가용 이동</span>
             </div>
+
+            {(() => {
+              const prediction = predictBedsAtArrival(hospital.bedHistory, hospital.latestGeneralBeds, etaMin);
+              return (
+                <div className="predict">
+                  <div className="predict__head">
+                    도착 시점 예상 병상{etaMin !== null && <span className="mono"> · {etaMin}분 후</span>}
+                  </div>
+                  {prediction.predictedGeneral === null ? (
+                    <p className="predict__alt">예상 소요시간을 알 수 없어 예측할 수 없습니다.</p>
+                  ) : (
+                    <>
+                      <div className="predict__row">
+                        <BedBadge
+                          label="일반"
+                          count={prediction.predictedGeneral}
+                          state={bedStateOf(prediction.predictedGeneral)}
+                        />
+                        {prediction.trendPerMin !== null && (
+                          <span
+                            className={`predict__trend${
+                              prediction.trendPerMin < 0
+                                ? " predict__trend--down"
+                                : prediction.trendPerMin > 0
+                                  ? " predict__trend--up"
+                                  : ""
+                            }`}
+                          >
+                            {prediction.trendPerMin < 0 ? "▼" : prediction.trendPerMin > 0 ? "▲" : "―"} 최근 추세 반영
+                          </span>
+                        )}
+                        <span className="predict__conf">신뢰도 {CONFIDENCE_LABEL[prediction.confidence]}</span>
+                      </div>
+                      <p className="predict__note">
+                        현재 {hospital.latestGeneralBeds}석 · 실시간 변동에 따라 실제 도착 시점 병상 수는 달라질 수 있습니다.
+                      </p>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
 
             <RouteMap
               center={geo.coords}

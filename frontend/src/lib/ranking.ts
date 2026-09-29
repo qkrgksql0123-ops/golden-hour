@@ -25,6 +25,7 @@ function baseView(h: Hospital, distanceRank: number): HospitalView {
       icu: h.latestIcuBeds,
     },
     bedsUpdatedAt: h.bedsUpdatedAt,
+    bedHistory: h.bedHistory,
   };
 }
 

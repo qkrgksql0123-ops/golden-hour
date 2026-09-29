@@ -5,6 +5,7 @@ import { LocationBar } from "../components/LocationBar";
 import { LocationSearch } from "../components/LocationSearch";
 import { EmergencyNotice } from "../components/EmergencyNotice";
 import { SortToggle } from "../components/SortToggle";
+import { PediatricToggle } from "../components/PediatricToggle";
 import { HospitalList } from "../components/HospitalList";
 import { DegradedBanner } from "../components/DegradedBanner";
 import { DetailPanel } from "../components/DetailPanel";
@@ -19,6 +20,7 @@ import { minutesSince, timeLabel } from "../lib/format";
 // 기능 ①③ 화면. docs/API.md 의 /api/v1/hospitals/recommend 응답을 그대로 쓴다 해.
 export default function HomePage() {
   const [sort, setSort] = useState<SortMode>("time");
+  const [pediatricOnly, setPediatricOnly] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
   const [manualLabel, setManualLabel] = useState<string | null>(null);
@@ -33,10 +35,10 @@ export default function HomePage() {
 
   // ETA가 없으면 소요시간을 신뢰할 수 없으므로 거리순으로 고정한다 해.
   const effectiveSort: SortMode = degraded ? "distance" : sort;
-  const items = useMemo(
-    () => (effectiveSort === "time" ? byTime : byDistance),
-    [effectiveSort, byTime, byDistance],
-  );
+  const items = useMemo(() => {
+    const base = effectiveSort === "time" ? byTime : byDistance;
+    return pediatricOnly ? base.filter((h) => h.beds.pediatric > 0) : base;
+  }, [effectiveSort, byTime, byDistance, pediatricOnly]);
 
   const points: MapPoint[] = useMemo(
     () =>
@@ -100,6 +102,9 @@ export default function HomePage() {
       <div className="worksplit">
         <div className="side">
           <div className="sidehead">
+            <div className="sidehead__filters">
+              <PediatricToggle active={pediatricOnly} onChange={setPediatricOnly} />
+            </div>
             {degraded ? (
               <span className="sidehead__note">거리순 · 소요시간을 계산할 수 없습니다</span>
             ) : (
@@ -116,6 +121,11 @@ export default function HomePage() {
             showRankShift={effectiveSort === "time" && !degraded}
             selectedId={selectedId}
             onSelect={toggleSelect}
+            emptyMessage={
+              pediatricOnly
+                ? "주변에 소아 병상이 있는 응급의료기관이 없습니다."
+                : undefined
+            }
           />
 
           {oldestUpdatedAt && (
