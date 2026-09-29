@@ -2,6 +2,10 @@ spring:
   application:
     name: golden-hour
 
+  # backend/.env 를 읽어서 아래 ${...} 자리표시자를 채운다 해 (파일이 없어도 기동은 된다 해).
+  config:
+    import: optional:file:.env[.properties]
+
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/golden_hour}
     username: ${DB_USERNAME:golden_hour}

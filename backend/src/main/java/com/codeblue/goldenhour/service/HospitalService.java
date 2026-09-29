@@ -2,6 +2,7 @@ package com.codeblue.goldenhour.service;
 
 import com.codeblue.goldenhour.domain.Hospital;
 import com.codeblue.goldenhour.dto.HospitalResponse;
+import com.codeblue.goldenhour.dto.RecommendResponse;
 import com.codeblue.goldenhour.repository.HospitalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,9 @@ import java.util.List;
 public class HospitalService {
 
 	private static final int EARTH_RADIUS_M = 6_371_000;
+	private static final double DETOUR_FACTOR = 1.4;
+	private static final double AVG_SPEED_MPS = 40_000.0 / 3600.0; // 시속 40km
+	private static final double NO_BED_PENALTY_MIN = 30;
 
 	private final HospitalRepository hospitalRepository;
 
@@ -32,6 +36,35 @@ public class HospitalService {
 				.filter(r -> r.getStraightDistanceM() != null && r.getStraightDistanceM() <= radiusM)
 				.sorted(Comparator.comparingDouble(HospitalResponse::getStraightDistanceM))
 				.toList();
+	}
+
+	/**
+	 * 거리순 목록 + 예상 소요시간 기반 종합순 목록.
+	 *
+	 * 카카오모빌리티 길찾기 API 승인 전이라 ETA는 직선거리 x 우회계수 / 평균속도로 추정한다 해.
+	 * 승인되면 estimateEtaSeconds 만 실제 API 호출로 바꾸면 된다 해.
+	 */
+	public RecommendResponse recommend(double lat, double lng, double radiusKm) {
+		List<HospitalResponse> nearby = findNearby(lat, lng, radiusKm).stream()
+				.filter(h -> h.getBedsUpdatedAt() != null)
+				.toList();
+
+		List<RecommendResponse.Ranked> combined = nearby.stream()
+				.map(h -> {
+					long eta = estimateEtaSeconds(h.getStraightDistanceM());
+					// 점수는 낮을수록 좋다: 예상 분 + 응급실 병상이 없으면 페널티
+					double score = eta / 60.0 + (h.getLatestGeneralBeds() != null && h.getLatestGeneralBeds() > 0 ? 0 : NO_BED_PENALTY_MIN);
+					return new RecommendResponse.Ranked(h, eta, Math.round(score * 10) / 10.0);
+				})
+				.sorted(Comparator.comparingDouble(RecommendResponse.Ranked::getCombinedScore))
+				.toList();
+
+		return new RecommendResponse(nearby, combined);
+	}
+
+	private long estimateEtaSeconds(Double straightDistanceM) {
+		double meters = straightDistanceM == null ? 0 : straightDistanceM;
+		return Math.round(meters * DETOUR_FACTOR / AVG_SPEED_MPS);
 	}
 
 	private HospitalResponse toResponseWithDistance(Hospital h, double lat, double lng) {

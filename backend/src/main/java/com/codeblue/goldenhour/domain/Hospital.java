@@ -36,6 +36,10 @@ public class Hospital {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	/** 국립중앙의료원 기관ID (예: A1100043). 공공 API 데이터와 upsert 매칭에 쓴다 해. */
+	@Column(unique = true)
+	private String hpid;
+
 	@Column(nullable = false)
 	private String name;
 

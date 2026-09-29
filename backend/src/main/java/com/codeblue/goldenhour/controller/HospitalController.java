@@ -1,6 +1,7 @@
 package com.codeblue.goldenhour.controller;
 
 import com.codeblue.goldenhour.dto.HospitalResponse;
+import com.codeblue.goldenhour.dto.RecommendResponse;
 import com.codeblue.goldenhour.service.HospitalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,5 +24,14 @@ public class HospitalController {
 			@RequestParam(defaultValue = "5") double radiusKm
 	) {
 		return hospitalService.findNearby(lat, lng, radiusKm);
+	}
+
+	@GetMapping("/api/v1/hospitals/recommend")
+	public RecommendResponse recommend(
+			@RequestParam double lat,
+			@RequestParam double lng,
+			@RequestParam(defaultValue = "5") double radiusKm
+	) {
+		return hospitalService.recommend(lat, lng, radiusKm);
 	}
 }
