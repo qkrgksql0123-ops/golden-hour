@@ -6,11 +6,16 @@ interface Props {
   showRankShift: boolean;
   selectedId: number | null;
   onSelect: (id: number) => void;
+  emptyMessage?: string;
 }
 
-export function HospitalList({ items, showRankShift, selectedId, onSelect }: Props) {
+export function HospitalList({ items, showRankShift, selectedId, onSelect, emptyMessage }: Props) {
   if (items.length === 0) {
-    return <p className="empty">주변에 표시할 응급의료기관이 없습니다. 위치를 다시 확인해 주세요.</p>;
+    return (
+      <p className="empty">
+        {emptyMessage ?? "주변에 표시할 응급의료기관이 없습니다. 위치를 다시 확인해 주세요."}
+      </p>
+    );
   }
 
   return (

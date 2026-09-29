@@ -14,6 +14,19 @@ export interface Hospital {
   latestIcuBeds: number;
   bedsUpdatedAt: string; // ISO datetime
   straightDistanceM?: number;
+  /**
+   * 최근 일반 병상 수 이력 (도착 시점 예측용).
+   *
+   * TODO(백엔드): 아직 /nearby, /recommend, /{id} 응답에 없는 필드다 해.
+   * backend의 bed_status_history 테이블을 최근 N개 내려주는 식으로 추가하면 된다 해.
+   * 그 전까지 프론트는 mocks/recommend.ts의 가짜 이력으로 예측 기능을 시연한다 해.
+   */
+  bedHistory?: BedHistoryPoint[];
+}
+
+export interface BedHistoryPoint {
+  recordedAt: string; // ISO datetime
+  general: number;
 }
 
 export interface EtaResult {
